@@ -2,8 +2,11 @@ import express from 'express';
 import fs from "fs";
 import OpenAI from "openai";
 import path from 'path';
+import startWebSocketServer from './wsController';
+import cors from 'cors';
 
 const app = express();
+app.use(cors());
 
 app.get("/", (req,res) => {
   res.send("hello world");
@@ -11,11 +14,11 @@ app.get("/", (req,res) => {
 
 app.post("/talk", (req,res) => {
   res.send("hello world");
-})
-
+});
+startWebSocketServer();
 app.listen('8000', () => console.log("Server started"));
 
-const openai = new OpenAI({apiKey: process.env.OPENAI_KEY});
+// const openai = new OpenAI({apiKey: process.env.OPENAI_KEY});
 // const speechFile = path.resolve("./speech.mp3");
 
 
@@ -90,7 +93,6 @@ const pushToChatHistory = (message: OpenAI.Chat.Completions.ChatCompletionMessag
     console.log("File written successfully");
   });
 }
-pushToChatHistory({"role": "user", "content": "Who won the world series in 2020?"});
 // Open ai chatbot
 // async function main() {
 //   const completion = await openai.chat.completions.create({

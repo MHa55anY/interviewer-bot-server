@@ -4,7 +4,7 @@
   "description": "A bot that can hold interviews",
   "main": "src/index.ts",
   "scripts": {
-    "start": "nodemon src/index.ts"
+    "start": "nodemon src/index.ts --ignore database.json"
   },
   "author": "Hassan Yusuf",
   "license": "ISC",

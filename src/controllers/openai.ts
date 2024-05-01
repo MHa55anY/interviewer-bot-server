@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from "path";
 import isFileEmpty from "../helper/isFileEmpty";
 import dotenv from 'dotenv';
+import { Uploadable } from "openai/uploads";
 
 dotenv.config();
 
@@ -10,21 +11,36 @@ const openai = new OpenAI({apiKey: process.env.OPENAI_KEY});
 
 //Speech to text
 export async function transcribeSpeechAndPushToHistory() {
-    try {
-        const transcription = await openai.audio.transcriptions.create({
-            file: fs.createReadStream("./test.mp3"),
-            model: "whisper-1",
-          });
-        
-        console.log(transcription.text);
-        pushToChatHistory({
-            role: 'user',
-            content: transcription.text
+  try {
+      const transcription = await openai.audio.transcriptions.create({
+          file: fs.createReadStream("./test.mp3"),
+          model: "whisper-1",
         });
-    } catch (error) {
-        console.log(error);
-    }
+      
+      console.log(transcription.text);
+      pushToChatHistory({
+          role: 'user',
+          content: transcription.text
+      });
+  } catch (error) {
+      console.log(error);
+  }
 };
+
+//Text to Speech
+export async function textToSpeech(text: string) {
+  try {
+    const wav = await openai.audio.speech.create({
+      model: "tts-1",
+      voice: "echo",
+      input: text,
+      response_format: "wav"
+    });
+    return Buffer.from(await wav.arrayBuffer());
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 //send response to chatgpt
 const databasePath = path.join(__dirname, '../../database.json');
@@ -68,6 +84,7 @@ export async function talkToGpt() {
             });
             console.log(completion.choices);
             pushToChatHistory(completion.choices[0].message);
+            return completion.choices[0].message.content;
     } catch (error) {
         console.log(error)
     }

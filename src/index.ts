@@ -1,7 +1,7 @@
 import express from 'express';
-import startWebSocketServer from './controllers/websocket';
+import startWebSocketServer, { webSocket } from './controllers/websocket';
 import cors from 'cors';
-import { talkToGpt } from './controllers/openai';
+import { talkToGpt, textToSpeech } from './controllers/openai';
 
 const app = express();
 app.use(cors());
@@ -14,8 +14,12 @@ app.post("/talk", (req,res) => {
   res.send("hello world");
 });
 
-app.get("/init-bot", (_, res) => {
-  talkToGpt();
+app.get("/init-bot", async (_, res) => {
+  const textResponse = await talkToGpt();
+  if(textResponse) {
+    const res = await textToSpeech(textResponse);
+    if(res) webSocket.send(res);
+  };
   res.send({message: "Bot initialsed!"});
 });
 

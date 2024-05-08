@@ -5,14 +5,15 @@ import { talkToGpt, textToSpeech, transcribeSpeechAndPushToHistory } from './ope
 
 export let webSocket: WebSocket;
 
+let clients: WebSocket[] = [];
+
 const startWebSocketServer = () => {
     const wss = new WebSocket.Server({ port: 8081 });
 
     wss.on('connection', (ws) => {
         webSocket = ws;
-        console.log("client connected!");
-        const audioStream = fs.readFileSync(path.join(__dirname, "../../speech.mp3"));
-        ws.send(audioStream);
+        console.log("client connected!", clients.length);
+        clients.push(ws);
 
         ws.addEventListener("message", async (event) => {
             const speechFile = path.resolve("./test.mp3");
@@ -21,11 +22,16 @@ const startWebSocketServer = () => {
             const textResponse = await talkToGpt();
             if(textResponse) {
                 const res = await textToSpeech(textResponse);
-                if(res) ws.send(res);
+                const receiver = clients.find((c) => c !== ws);
+                if(res && receiver) {
+                    receiver.send(res);
+                    console.log("Sent audio message to client");
+                }
             };
         });
         
         ws.on('close', () => {
+            clients = clients.filter(client => client !== ws);
             console.log('Client disconnected');
         });
     });

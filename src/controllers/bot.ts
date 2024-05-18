@@ -3,6 +3,7 @@ import { startRecording, stopRecording } from "./100ms";
 
 //EDIT template according to client code
 const startBot = async (roomId:string, roomCodeForHost:string) => {
+  try {
     const browser = await puppeteer.launch({
       headless:true,
       args: ['--use-fake-ui-for-media-stream'], // Use fake UI for media stream
@@ -19,6 +20,9 @@ const startBot = async (roomId:string, roomCodeForHost:string) => {
 
     await startRecording(roomId);
     setTimeout(() => stopRecording(roomId), 120000);
+  } catch (error) {
+    throw new Error('Failed to start puppeteer bot');
+  }
 };
 
 export default startBot;

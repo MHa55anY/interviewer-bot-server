@@ -11,18 +11,25 @@ app.use(cors());
 app.post("/init-bot", async (req, res) => {
   const {role, roomCode, roomId} = req.body as IBotRequest;
 
-  if(role == 'host') {
-    console.log(role);
-    const textResponse = await talkToGpt();
-    if(textResponse) {
-      const speech = await textToSpeech(textResponse);
-      if(speech) webSocket.send(speech);
-    };
+  try {
+    if(role == 'host') {
+      const textResponse = await talkToGpt();
+      if(textResponse) {
+        const speech = await textToSpeech(textResponse);
+        if(speech) webSocket.send(speech);
+      }
+      else {
+        throw new Error("Got no response from gpt");
+      };
+    }
+    if(role === 'guest') {
+      await startBot(roomId, roomCode);
+    }
+    res.send({message: "Bot initialsed!"});
+  } catch (error) {
+    res.send('Failed to initialise bot!').status(500);
+    console.error('Failed to initialise bot!: ', error);
   }
-  if(role === 'guest') {
-    await startBot(roomId, roomCode);
-  }
-  res.send({message: "Bot initialsed!"});
 });
 
 startWebSocketServer();

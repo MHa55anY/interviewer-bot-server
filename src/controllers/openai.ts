@@ -24,6 +24,7 @@ export async function transcribeSpeechAndPushToHistory() {
       });
   } catch (error) {
       console.log(error);
+      throw new Error("Failed transcribeSpeechAndPushToHistory");
   }
 };
 
@@ -39,6 +40,7 @@ export async function textToSpeech(text: string) {
     return Buffer.from(await wav.arrayBuffer());
   } catch (error) {
     console.log(error);
+    throw new Error("Failed to convert text to speech");
   }
 }
 

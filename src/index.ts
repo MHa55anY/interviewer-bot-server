@@ -3,12 +3,14 @@ import startWebSocketServer, { webSocket } from './controllers/websocket';
 import cors from 'cors';
 import { talkToGpt, textToSpeech } from './controllers/openai';
 import startBot from './controllers/bot';
+import IBotRequest from './types/IBotRequest';
 
 const app = express();
 app.use(cors());
 
-app.get("/init-bot", async (req, res) => {
-  const role: string = req.query.role as string;
+app.post("/init-bot", async (req, res) => {
+  const {role, roomCode, roomId} = req.body as IBotRequest;
+
   if(role == 'host') {
     console.log(role);
     const textResponse = await talkToGpt();
@@ -18,7 +20,7 @@ app.get("/init-bot", async (req, res) => {
     };
   }
   if(role === 'guest') {
-    await startBot();
+    await startBot(roomId, roomCode);
   }
   res.send({message: "Bot initialsed!"});
 });
